@@ -53,6 +53,7 @@ void* init(int* n, int* m){
 				else if (type == 3){
 					if (n == &one.n){
 						printf("a[%d][%d].re = ", i, j);
+						scanf("%d", &(((struct complex*)matrix + i**m + j)->x));
 						printf("a[%d][%d].im = ", i, j);
 						scanf("%d", &(((struct complex*)matrix + i**m + j)->y));
 					}
@@ -70,60 +71,46 @@ void* init(int* n, int* m){
 
 
 
-void sumInt(void* a, void* b){
-	int i, j;
-	for (i = 0; i < one.n; i++)
-		for (j = 0; j < one.m; j++){
-			*((int*)result.z + i*one.m + j) = *((int*)a + i*one.m + j) + *((int*)b + i*one.m + j);
-		}
+void sumInt(void* a, void* b, int i, int j){
+    *((int*)result.z + i*one.m + j) = *((int*)a) + *((int*)b);
 }
-void sumFloat(void* a, void* b){
-	int i, j;
-	for (i = 0; i < one.n; i++)
-		for (j = 0; j < one.m; j++){
-			*((float*)result.z + i*one.m + j) = *((float*)a + i*one.m + j) + *((float*)b + i*one.m + j);
-		}
+void sumFloat(void* a, void* b,int i, int j){
+    *((float*)result.z + i*one.m + j) = *((float*)a) + *((float*)b);
 }
-void sumComplex(void* a, void* b){
-	int i, j;
-	for (i = 0; i < one.n; i++)
-		for (j = 0; j < one.m; j++){
-			((struct complex*)result.z + i*one.m + j)->x = ((struct complex*)a + i*one.m + j)->x + ((struct complex*)b + i*one.m + j)->x;
-			((struct complex*)result.z + i*one.m + j)->y = ((struct complex*)a + i*one.m + j)->y + ((struct complex*)b + i*one.m + j)->y;
-		}
+void sumComplex(void* a, void* b, int i, int j){
+     ((struct complex*)result.z + i*one.m + j)->x = ((struct complex*)a)->x + ((struct complex*)b)->x;
+     ((struct complex*)result.z + i*one.m + j)->y = ((struct complex*)a)->y + ((struct complex*)b)->y;
 }
-void universalSum(void* a, void* b, void(*func)(void* a, void* b)){
-	result.z = malloc(one.n*one.m*one.mas);
-	func(a, b);
-}
-void multiplyInt(void* a, void* b){
-	int i, j, h;
+void universalSum(void* a, void* b, void(*func)(void* a, void* b, int i, int j)){
+int i, j;
+result.z = malloc(one.n*one.m*one.mas);
 	for (i = 0; i < one.n; i++)
-		for (j = 0; j < two.m; j++)
-			for (h = 0; h < one.m; h++){
-				*((int*)result.z + i*two.m + j) += *((int*)a + i*two.n + h) * *((int*)b + h*two.m + j);
+		for (j = 0; j < one.m; j++)
+            func((char*)a + i*one.m*one.mas + j*one.mas, (char*)b + i*one.m*one.mas + j*one.mas, i, j);
+}
+void multiplyInt(void* a, void* b, int i, int j){
+
+				*((int*)result.z + i*two.m + j) += *((int*)a) * *((int*)b);
+
+}
+void multiplyFloat(void* a, void* b, int i, int j){
+	{
+				*((float*)result.z + i*two.m + j) += *((float*)a) * *((float*)b);
 			}
 }
-void multiplyFloat(void* a, void* b){
-	int i, j, h;
-	for (i = 0; i < one.n; i++)
-		for (j = 0; j < two.m; j++)
-			for (h = 0; h < one.m; h++){
-				*((float*)result.z + i*two.m + j) += *((float*)a + i*two.n + h) * *((float*)b + h*two.m + j);
+void multiplyComplex(void* a, void* b, int i, int j){
+	{
+				((struct complex*)result.z + i*two.m + j)->x += ((struct complex*)a)->x*((struct complex*)b)->x - ((struct complex*)a)->y*((struct complex*)b)->y;
+				((struct complex*)result.z + i*two.m + j)->y += ((struct complex*)a)->x*((struct complex*)b)->y + ((struct complex*)a)->y*((struct complex*)b)->x;
 			}
 }
-void multiplyComplex(void* a, void* b){
-	int i, j, h;
-	for (i = 0; i < one.n; i++)
-		for (j = 0; j < two.m; j++)
-			for (h = 0; h < one.m; h++){
-				((struct complex*)result.z + i*two.m + j)->x += ((struct complex*)a + i*one.m + h)->x*((struct complex*)b + h*two.m + j)->x - ((struct complex*)a + i*one.m + h)->y*((struct complex*)b + h*two.m + j)->y;
-				((struct complex*)result.z + i*two.m + j)->y += ((struct complex*)a + i*one.m + h)->x*((struct complex*)b + h*two.m + j)->y + ((struct complex*)a + i*one.m + h)->y*((struct complex*)b + h*two.m + j)->x;
-			}
-}
-void universalMultiply(void* a, void* b, void(*func)(void* a, void* b)){
+void universalMultiply(void* a, void* b, void(*func)(void* a, void* b, int i, int j)){
 	result.z = calloc(one.n*two.m, one.mas);
-	func(a, b);
+	int i, j, h;
+	for (i = 0; i < one.n; i++)
+    for (j = 0; j < one.m; j++)
+        for (h = 0; h < one.m; h++)
+func((char*)a + i*one.m*one.mas + j*one.mas, (char*)b + i*one.m*one.mas + j*one.mas, i, j);
 }
 void output(void* a){
 	int i, j;
@@ -132,7 +119,7 @@ void output(void* a){
 			for (j = 0; j < one.m; j++){
 				if (type == 1) printf("%d  ", *((int*)result.z + i*one.m + j));
 				else if (type == 2) printf("%f  ", *((float*)result.z + i*one.m + j));
-				else if (type == 3) printf("%d + %d*i  ", ((struct complex*)result.z + i*one.m + j)->x, ((struct complex*)result.z + i*one.m + j)->y);
+				else if (type == 3) printf("(%d + %d*i)  ", ((struct complex*)result.z + i*one.m + j)->x, ((struct complex*)result.z + i*one.m + j)->y);
 			}
 			printf("\n");
 		}
