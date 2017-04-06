@@ -1,0 +1,213 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+
+int type;//отвечает за тип данных
+int toper;//отвечает за тип операции
+
+
+struct matrix{
+	int n, m, mas;
+	void* z;
+}
+one, two, result;
+
+struct complex{
+	int x, y;
+};
+
+float inputf(float *m){
+float n;
+n = scanf("%f",m);
+return n;
+}
+
+int input(int *m){
+int n;
+n = scanf("%d", m);
+
+return n;
+}
+
+
+void* init(int* n, int* m){
+	int i, j;
+	void* matrix = malloc(*n**m*one.mas);
+	for (i = 0; i < *n; i++)
+			for (j = 0; j < *m; j++){
+				if (type == 1){
+					if (n == &one.n) printf("a[%d][%d] = ", i, j);
+					else printf("b[%d][%d] = ", i, j);
+					while ((input((int*)matrix + i**m + j) <= 0))  {
+                        printf("ERROR \n");
+                        scanf("%*[^\n]");
+                        }
+					}
+				else if (type == 2){
+					if (n == &one.n) printf("a[%d][%d] = ", i, j);
+					else printf("b[%d][%d] = ", i, j);
+					while ((inputf((float*)matrix + i**m + j) <= 0))  {
+                        printf("ERROR \n");
+                        scanf("%*[^\n]");
+				}}
+				else if (type == 3){
+					if (n == &one.n){
+						printf("a[%d][%d].re = ", i, j);
+						printf("a[%d][%d].im = ", i, j);
+						scanf("%d", &(((struct complex*)matrix + i**m + j)->y));
+					}
+					else {
+						printf("b[%d][%d].re = ", i, j);
+						scanf("%d", &(((struct complex*)matrix + i**m + j)->x));
+						printf("b[%d][%d].im = ", i, j);
+						scanf("%d", &(((struct complex*)matrix + i**m + j)->y));
+					}
+				}
+			}
+	return matrix;
+}
+
+
+
+
+void sumInt(void* a, void* b){
+	int i, j;
+	for (i = 0; i < one.n; i++)
+		for (j = 0; j < one.m; j++){
+			*((int*)result.z + i*one.m + j) = *((int*)a + i*one.m + j) + *((int*)b + i*one.m + j);
+		}
+}
+void sumFloat(void* a, void* b){
+	int i, j;
+	for (i = 0; i < one.n; i++)
+		for (j = 0; j < one.m; j++){
+			*((float*)result.z + i*one.m + j) = *((float*)a + i*one.m + j) + *((float*)b + i*one.m + j);
+		}
+}
+void sumComplex(void* a, void* b){
+	int i, j;
+	for (i = 0; i < one.n; i++)
+		for (j = 0; j < one.m; j++){
+			((struct complex*)result.z + i*one.m + j)->x = ((struct complex*)a + i*one.m + j)->x + ((struct complex*)b + i*one.m + j)->x;
+			((struct complex*)result.z + i*one.m + j)->y = ((struct complex*)a + i*one.m + j)->y + ((struct complex*)b + i*one.m + j)->y;
+		}
+}
+void universalSum(void* a, void* b, void(*func)(void* a, void* b)){
+	result.z = malloc(one.n*one.m*one.mas);
+	func(a, b);
+}
+void multiplyInt(void* a, void* b){
+	int i, j, h;
+	for (i = 0; i < one.n; i++)
+		for (j = 0; j < two.m; j++)
+			for (h = 0; h < one.m; h++){
+				*((int*)result.z + i*two.m + j) += *((int*)a + i*two.n + h) * *((int*)b + h*two.m + j);
+			}
+}
+void multiplyFloat(void* a, void* b){
+	int i, j, h;
+	for (i = 0; i < one.n; i++)
+		for (j = 0; j < two.m; j++)
+			for (h = 0; h < one.m; h++){
+				*((float*)result.z + i*two.m + j) += *((float*)a + i*two.n + h) * *((float*)b + h*two.m + j);
+			}
+}
+void multiplyComplex(void* a, void* b){
+	int i, j, h;
+	for (i = 0; i < one.n; i++)
+		for (j = 0; j < two.m; j++)
+			for (h = 0; h < one.m; h++){
+				((struct complex*)result.z + i*two.m + j)->x += ((struct complex*)a + i*one.m + h)->x*((struct complex*)b + h*two.m + j)->x - ((struct complex*)a + i*one.m + h)->y*((struct complex*)b + h*two.m + j)->y;
+				((struct complex*)result.z + i*two.m + j)->y += ((struct complex*)a + i*one.m + h)->x*((struct complex*)b + h*two.m + j)->y + ((struct complex*)a + i*one.m + h)->y*((struct complex*)b + h*two.m + j)->x;
+			}
+}
+void universalMultiply(void* a, void* b, void(*func)(void* a, void* b)){
+	result.z = calloc(one.n*two.m, one.mas);
+	func(a, b);
+}
+void output(void* a){
+	int i, j;
+	if (toper == 1){
+		for (i = 0; i < one.n; i++){
+			for (j = 0; j < one.m; j++){
+				if (type == 1) printf("%d  ", *((int*)result.z + i*one.m + j));
+				else if (type == 2) printf("%f  ", *((float*)result.z + i*one.m + j));
+				else if (type == 3) printf("%d + %d*i  ", ((struct complex*)result.z + i*one.m + j)->x, ((struct complex*)result.z + i*one.m + j)->y);
+			}
+			printf("\n");
+		}
+	}
+	if (toper == 2){
+		for (i = 0; i < one.n; i++){
+			for (j = 0; j < two.m; j++){
+				if (type == 1) printf("%d  ", *((int*)result.z + i*two.m + j));
+				else if (type == 2) printf("%f  ", *((float*)result.z + i*two.m + j));
+				else if (type == 3) printf("(%d + %d*i)  ", ((struct complex*)result.z + i*one.m + j)->x, ((struct complex*)result.z + i*one.m + j)->y);
+			}
+		printf("\n");
+		}
+	}
+	}
+
+int main(){
+	setlocale(LC_ALL, "Rus");
+	printf("Введите 1 для целых, 2 для вещественных, 3 для комплексных матриц\n");
+	while ((input(&type) <= 0)||(type>3)||(type<1)){
+        printf("ERROR \n");
+        scanf("%*[^\n]");
+}
+	if (type == 1) one.mas = sizeof(int);
+	else if (type == 2) one.mas = sizeof(float);
+	else if (type == 3) one.mas = sizeof(struct complex);
+	printf("Введите 1 для сложения, 2 для умножения\n");
+	while ((input(&toper) <= 0)||(toper>2)||(toper<1)){
+        printf("ERROR \n");
+        scanf("%*[^\n]");
+}
+	printf("Введите кол-во строк и столбцов первой матрицы\n");
+	while ((input(&one.n) <= 0)||(one.n<0)){
+        printf("ERROR \n");
+        scanf("%*[^\n]");
+        }
+    while ((input(&one.m) <= 0)||(one.m<0)){
+        printf("ERROR \n");
+        scanf("%*[^\n]");
+        }
+
+	printf("Введите кол-во строк и столбцов второй матрицы\n");
+	while ((input(&two.n) <= 0)||(two.n<0)){
+        printf("ERROR \n");
+        scanf("%*[^\n]");
+        }
+    while ((input(&two.m) <= 0)||(two.m<0)){
+        printf("ERROR \n");
+        scanf("%*[^\n]");
+        }
+	if (toper == 1){
+		if (one.n == two.n && one.m == two.m){
+			one.z = init(&one.n, &one.m);
+			two.z = init(&two.n, &two.m);
+			if (type == 1) universalSum(one.z, two.z, sumInt);
+			else if (type == 2) universalSum(one.z, two.z, sumFloat);
+			else if (type == 3) universalSum(one.z, two.z, sumComplex);
+			output(result.z);
+		}
+		else printf("Матрицы невозможно сложить\n");
+	}
+	else if (toper == 2){
+		if (one.m == two.n){
+			one.z = init(&one.n, &one.m);
+			two.z = init(&two.n, &two.m);
+			if (type == 1) universalMultiply(one.z, two.z, multiplyInt);
+			else if (type == 2) universalMultiply(one.z, two.z, multiplyFloat);
+			else if (type == 3) universalMultiply(one.z, two.z, multiplyComplex);
+			output(result.z);
+		}
+		else printf("Матрицы невозможно умножить\n");
+	}
+	free(one.z);
+	free(two.z);
+	free(result.z);
+	system("PAUSE");
+}
