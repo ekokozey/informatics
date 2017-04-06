@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <locale.h>
 
-int type;//отвечает за тип данных
-int toper;//отвечает за тип операции
+int type;
+int toper;
 
 
 struct matrix{
